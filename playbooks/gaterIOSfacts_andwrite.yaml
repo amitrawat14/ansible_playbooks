@@ -1,0 +1,40 @@
+cat facts.yml
+- name: "Demonstrate connecting to switches"
+  hosts: ios_devices
+  gather_facts: no
+
+  tasks:
+    ###
+    # Collect data
+
+    - name: Gather facts from IOS
+      ios_facts:
+       #gather_network_resourcecs: all
+      when: ansible_network_os == 'ios'
+
+    # Demonstrate variables
+    - name: display from one host
+      debug:
+        var: hostvars['iosv-1']
+
+    - name: Display some facts
+      debug:
+        msg: "The hostname is {{ansible_net_hostname}} image is {{ ansible_net_image }} and the OS is {{ ansible_net_version }}"
+
+    - name: Write facts to disk using a template
+      copy:
+        content: |
+          #jinja2: lstrip_blocks: True
+
+          IOS device info:
+            {% for host in groups['ios_devices'] %}
+            Hostname: {{ hostvars[host].ansible_net_hostname }}
+            Version: {{ hostvars[host].ansible_net_version }}
+            Serial: {{ hostvars[host].ansible_net_serialnum }}
+            Model: {{hostvars[host].ansible_net_model}}
+            BootFlashImage: {{hostvars[host].ansible_net_image}}
+            Interface: {{hostvars[host].ansible_net_interfaces}}
+            {% endfor %}
+
+        dest: "/home/amit/playbooks/backup/{{ansible_net_hostname}}.text"
+      run_once: yes

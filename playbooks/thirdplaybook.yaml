@@ -1,0 +1,29 @@
+---
+# this provides otuput for each devices  and create text file
+- name: First Network Playbook
+  connection : network_cli
+  gather_facts: false
+  hosts: ios-devices
+  tasks:
+  - name: show version
+    ios_command:
+      commands: show version
+    register: output1
+  - name: show output
+    debug:
+     var: output1.stdout_lines
+  - name: copy version output to file
+    copy: content="{{output1}}" dest=./output/{{inventory_hostname}}_version.txt
+
+  - name: show interface
+    ios_command:
+      commands: show ip interface brief
+    register: output2
+  - name: show output of interface
+    debug:
+     var: output2.stdout_lines
+  - name: copy interface output to file
+    copy: content="{{output2}}" dest=./output/{{inventory_hostname}}.txt
+
+
+...

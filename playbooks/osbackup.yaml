@@ -1,0 +1,48 @@
+- name: "Demonstrate connecting to switches"
+  hosts: cisco_devices
+  gather_facts: no
+
+  tasks:
+    - name: Setting the variable in second task
+      set_fact:
+       hostname: "{{inventory_hostname}}"
+    - name: printing variable
+      debug:
+       msg : "print variable call hostname {{hostname}}"
+
+    - name: "Taking backup for switch {{ inventory_hostname}}"
+      ios_config:
+        backup: yes
+      register: backup_ios_location
+      when: ansible_network_os == 'ios'
+
+    - name: "Taking backup for swtich {{ inventory_hostname}}"
+      iosxr_config:
+        backup: yes
+      register: backup_iosxr_location
+      when: ansible_network_os == 'iosxr'
+
+## by default we don't required below, this is only required if want to place backup in nondefault directory or copy it to probably remote location. By default if we have backup folder than above task will create the backup.
+## We don't need to register in this case. 
+
+    - name: Create backup dir
+      file:
+        path: "/home/amit/playbooks/iosbackups/{{ inventory_hostname }}"
+        state: directory
+        recurse: yes
+
+    - name: Copy IOS backup files into /home/amit/playbooks/iosbackups/
+      copy:
+        src: "{{ backup_ios_location.backup_path }}"
+        dest: "/home/amit/playbooks/iosbackups/{{ inventory_hostname }}/{{ inventory_hostname }}.bck"
+        backup: yes
+      when: ansible_network_os == 'ios'
+
+#here we used backup argument in copy module, it means if backup value is "yes" and download configuration is differ than existing configuration than existing configuration will be also backup up.
+   
+    - name: Copy XR backup files into /home/amit/playbooks/iosbackups/
+      copy:
+        src: "{{ backup_iosxr_location.backup_path }}"
+        dest: "/home/amit/playbooks/iosbackups/{{ inventory_hostname }}/{{ inventory_hostname }}.bck"
+        backup: no
+      when: ansible_network_os == 'iosxr'

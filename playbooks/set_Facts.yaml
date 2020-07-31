@@ -1,0 +1,31 @@
+#This is mainly to show how to set local variable. which can be used in the rest 
+# of task of this play.
+---
+
+- name: running first play
+  connection : network_cli
+  gather_facts: false
+  hosts: all
+  tasks:
+  - name: setting fact
+    set_fact:
+     var1: "{{ansible_host}} {{ansible_user}}"
+     var2: "{{ansible_network_os}}"
+  - name : printing variable
+    debug:
+      msg: "print variable >>>>> {{var1}} and >>>> {{var2}}"
+
+
+- name: Running second play
+  gather_facts: false
+  hosts: all
+  tasks:
+  - name: Setting the variable in second task
+    set_fact:
+     var_port: "{{ansible_ssh_port}}"
+  - name: checking the local variable from first play to second play
+    debug:
+     msg: "print in second play {{var2}}"
+  - name: print the local variable in second play
+    debug:
+     msg: "print in second play {{var_port}}"

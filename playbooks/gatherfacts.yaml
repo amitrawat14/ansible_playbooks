@@ -1,0 +1,53 @@
+---
+
+- name: Network Playbook to Gather Facts
+  connection : network_cli
+  gather_facts: false
+  hosts: ios-devices
+  tasks:
+
+  - name: Gather IOS Facts
+    ios_facts:
+      gather_subset: all
+    register: output
+
+
+  - name: show hostname of devices
+    debug:
+     msg: "printing {{ansible_net_hostname}}"
+
+  - name: show hostname of ansible_net_image
+    debug:
+     msg: "printing {{ansible_net_image }}"
+
+  - name: show data of interfaces
+    debug:
+     msg: "printing {{ansible_net_interfaces}}"
+
+  - name: show data of interfaces
+    debug:
+     msg: "printing {{ansible_net_interfaces}}"
+
+  - name: show data of cdp/lldp neighbours
+    debug:
+     msg: "printing {{ansible_net_neighbors }}"
+
+  - name: show data of IPV4
+    debug:
+     msg: "printing {{ansible_net_all_ipv4_addresses}}"
+
+  - name: show data of net_api
+    debug:
+     msg: "printing {{ansible_net_api }}"
+
+  - name: show data of config
+    debug:
+     msg: "printing {{ansible_net_config}}"
+     #var : "output.stdout_lines"
+
+  - name: show data of others
+    debug:
+     var: output.stdout_lines
+
+...
+

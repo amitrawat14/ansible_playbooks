@@ -1,0 +1,79 @@
+• The primary use case for vaults is for encrypting variable files to protect sensitive information such
+as passwords or it can be task file 
+
+to encrypt varibale file or group file let's use this
+ansible-vault --vault-id @prompt /group-vars/ios_devices
+ansible-vault --vault-id @prompt /host-vars/iosv_1
+ansible-vault --vault-id @prompt ansible_vault_playbook.yaml
+
+# above 3 example will basically encrypt the file located in the directory. After you press the enter , it will ask for
+password which will further encrypt the file.
+
+Now if we to use execute any play book with encrypted variable file we have two option
+first - use @prompt to provide password with --vault-id option
+>> ansible-playbook -i hosts --vault-id @prompt ansible-vault.yml
+
+This will ask for password and execute the file , Second create a encryption file,generally we use file name vault-id but it can be anything, we need to secure this file by adding appropriate permission or put it in environment variable
+
+To create file 
+>>touch file_name_vault-id
+>>echo "password_1234" > file_name_vault-id
+
+
+If we have any file which is already encrypted with password and we want to change it with new one, use below command
+ansible-vault rekey playbook.yaml
+ This will ask for old password and new password
+
+If we want to view the encrypte file content, we can use view argument as eblow
+ansible-vault view playbook.yaml  # this will ask for password
+ansible-vault view --vault-id key_file playbook.yaml # this will not ask for password but take from key_file
+
+if you want to edit encrypted content only
+ansible-vault edit playbook.yaml or
+ansible-vault edit --vault-id key_file playbook.yaml
+
+if you want to decrypt file and put it in it's orginal state,
+ansible-vault decrypt playbook.yaml # this will ask password or
+ansible-vault decrypt --vault-id key_file playbook.yaml
+
+
+===========General notes=================================
+the contents of an encrypted file: ansible-vault view <file>
+• edit to edit an encrypted file:ansible-vault edit <file>
+• unencrypt will unencrypt an encrypted file: ansible-vault unencrypt <file>
+• encrypt_string will encrypt a string: ansible-vault encrypt_string 'encrypted text goes here'
+• An file encrypted with ansible-vault is called a vault in Ansible parlance.
+• The primary use case for vaults is for encrypting variable files to protect sensitive information such
+as passwords.
+• It is also possible to encrypt task files or even arbitrary files such as binaries if desired.
+• The ansible-vault password file is simply a file that contains a password. There is no special formatting.
+• The recommended way to provide a vault password from the CLI is to use --vault-id.
+• --vault-id may be passed a vault file or a prompt flag (–vault-id@prompt) to collect credentials
+to unencrypt a target vault.
+• Prior to –vault-id, Ansible could only take a single vault password for a playbook.
+11
+Ansible Playbooks Linux Academy
+• Multiple Vault IDs may be provided and Ansible will try each sequentially to unencrypt as needed.
+• Vault IDs also allow for the application of labels to encrypted strings.
+• Example:
+• ansible-vault encrypt_string --vault-id test@my-vault-file 'some secret text' > file.txt
+• The label ‘test’ is applied using the password from the vault file my-vault-file.
+• In order for Ansible to use the vault-id during playbook execution you must pass --vault-id
+test@my-vault-file with the ansible-playbook command.
+• Example:
+• Let us say you have a playbook called site.yml that makes use of the vault file.txt.
+• In order for Ansible to access the file.txt vault, you must specify the password file for the
+vault using the correct vault id.
+• Run: ansible-playbook --vault-id test@my-vault-file site.yml
+• Using this command, Ansible will try the password from my-vault-file on any string labeled
+with ‘test’ before trying any other passwords or vault files.
+• You may also specify @prompt instead of label@password_file to have Ansible prompt for the
+password.
+• Labels are not strictly required.
+• You may use only a password file.
+• Generally, this is not ideal but may have niche use cases.
+• Note: Password files may also be executable (such as a python script).
+• Note: when debugging plays, it is possible that sensitive information may be displayed in verbose
+logs.
+• You can set no_log for a module to censor log output to avoid accidentally exposing sensitive
+information during play execution.
