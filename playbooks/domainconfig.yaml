@@ -1,0 +1,65 @@
+#host file entry with group variable looks like this . This command is mainly about show how to make configuration changes and commit. domain-server is common command in yaml file but for devies these are different and same for commit / saving configuration . This agnostic yaml file makes it smaller otherwise if we go by one group such as IOS or XR or NX-OS it will become bigger and same with adding more vendor
+
+#hosts
+#[ios_devices]
+##iosv-1
+#iosv-1 ansible_host=ios-xe-mgmt-latest.cisco.com
+#
+#[xr_devices]
+#iosxr-1 ansible_host=sbx-iosxr-mgmt.cisco.com
+#
+#
+#[ios_devices:vars]
+#ansible_network_os = ios
+#ansible_connection= network_cli
+#domain_server = "ip domain name bbbb.com"
+#save= "write memory"
+#show_run = "show running-config"
+#
+#
+#[xr_devices:vars]
+#ansible_network_os = iosxr
+#ansible_connection= network_cli
+#domain_server = "domain name-server 4.4.4.4"
+#save= "commit"
+#show_run = "show running-config"
+#
+#[cisco_devices:children]
+#ios_devices
+#xr_devices
+
+
+
+---
+- name: CHANGE CONFIGURATION
+  hosts: cisco_devices
+  gather_facts: false
+
+  tasks:
+
+    - name: LOAD DOMAIN SERVER CONFIGURATION
+      cli_config:
+        config: "{{domain_server}}"
+      notify:
+        - SAVE CONFIGURATION
+
+    - name: Check the config
+      cli_command:
+        command: "{{show_run}} | in domain"
+      register: command_output
+    - name: print the show output
+      debug:
+       msg: "{{command_output.stdout_lines}}"
+
+  handlers:
+   - name: SAVE CONFIGURATION
+     cli_config:
+      config: "{{save}}"
+     when: ansible_network_os == 'iosxr'
+
+  handlers:
+   - name : SAVE CONFIGURATION
+     cli_command:
+      command: "{{save}}"
+     when: ansible_network_os == 'ios'
+

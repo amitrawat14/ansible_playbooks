@@ -1,0 +1,60 @@
+network agnostic way helps with tradational api when you want to use same command for all different vendor
+i.e show ip inte brief in IOS and show ipv4 inteface brier are two different command.
+
+Network agnostic helps us to us the one common with the help of group var. Group var can be in host file or group_vars directory
+
+we generally define variable in group variable with actual command. Here is the sampe of host file with group variable.
+We have remove other variable such as command password and user name to reduce the size.
+
+Main benefit become that for all the vendor os we use same command and our playbook become verify small. 
+=======================================================
+We always need ansible_connection type - network CLI
+#hosts
+[ios_devices]
+iosv-1 ansible_host=ios-xe-mgmt-latest.cisco.com
+
+[xr_devices]
+iosxr-1 ansible_host=sbx-iosxr-mgmt.cisco.com
+
+
+[ios_devices:vars]
+ansible_connection= network_cli
+show_interfaces = "show ip interface brief"
+
+
+[xr_devices:vars]
+ansible_connection= network_cli
+show_interfaces = "show ipv4 interface brief"
+
+[cisco_devices:children]
+ios_devices
+xr_devices
+=================
+
+Sample Yaml file for this. We now call "show_interfaces" for both different OS, we can also add other network vendor if needed.
+
+---
+- name: RUN COMMAND AND PRINT TO TERMINAL WINDOW
+  hosts: cisco_devices
+  gather_facts: false
+
+  tasks:
+
+    # The show_interfaces command is stored under group_vars
+    - debug:
+        msg: "{{show_interfaces}}"
+
+    - name: RUN SHOW COMMAND
+      cli_command:
+        command: "{{show_interfaces}}"
+      register: command_output
+
+    - name: PRINT TO TERMINAL WINDOW
+      debug:
+        msg: "{{command_output.stdout_lines}}"
+
+===========================================
+
+Similary we can define backup  command or other stuff
+backup: "show running-config"
+save: "write memory"
