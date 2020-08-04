@@ -1,0 +1,27 @@
+routers:
+  iosv-1:
+    Loopback22: "192.168.200.110"
+  iosxr-1:
+    Loopback101: "192.168.100.12"
+
+bgp:
+ local_as: 12345
+ neighbour:
+  - neighbour 1.2.3.4 remote-as 65444
+  - neighbour 192.1.1.1 remote-as 65345
+ local_network:
+  - no network 192.168.100.0 mask 255.255.255.0
+  - no network 192.168.101.0 mask 255.255.255.0
+  - network 192.168.110.0 mask 255.255.255.0
+
+
+ospf:
+ process: 1000
+ network:
+  -  no network 192.168.11.0 0.0.0.255 area 0
+  -  network 192.168.12.0 0.0.0.255 area 0
+  -  network 192.168.13.0 0.0.0.255 area 0
+  -  network 192.168.14.0 0.0.0.255 area 0
+  -  network 192.168.20.0 0.0.0.255 area 0
+  -  network 192.168.21.0 0.0.0.255 area 0
+  -  network 192.168.22.0 0.0.0.255 area 0

@@ -1,0 +1,7 @@
+router bgp {{bgp.local_as}}
+{% for neighbour in bgp.neighbour  %}
+{{neighbour}}
+{% endfor %}
+{% for networknumber in bgp.local_network %}
+{{networknumber}}
+{% endfor %}
