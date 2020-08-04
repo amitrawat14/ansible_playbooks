@@ -1,0 +1,19 @@
+---
+- name: configure network devices
+  hosts: ios_devices
+  gather_facts: false
+  tasks:
+    - name: print device config first
+      debug:
+       msg: "generating config for {{ inventory_hostname}}"
+
+    - name: Generate config template
+      template: src=template/bgp.j2 dest=configs/bgp-auto.cfg
+
+    - name: print device config first
+      debug:
+       msg: "{{ lookup('template', 'configs/bgp-auto.cfg').splitlines() }}"
+
+    - name: trying print with file module
+      debug:  msg= "{{ item }}"
+      loop: "{{ lookup ('file', 'configs/bgp-auto.cfg').splitlines() }}"

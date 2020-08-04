@@ -1,0 +1,58 @@
+---
+- name: configure network devices via template
+  hosts: ios_devices
+  gather_facts: false
+  tasks:
+    - name: print device config first
+      debug:
+       msg: "generating config for {{ inventory_hostname}}"
+
+    - name: deploying ospf configuratoin in ios
+      ios_config:
+       lines:
+         - "{{ item }}"
+       parents: "router ospf {{ospf.process}}"
+      with_items:  "{{lookup ('template','template/ospf.j2').splitlines()}}"
+
+
+- name: configure network devices via template generated config
+  hosts: ios_devices
+  gather_facts: false
+  tasks:
+    - name: print device config first
+      debug:
+       msg: "generating config for {{ inventory_hostname}}"
+
+    - name: Generate ospf config template
+      template: src=template/ospf.j2 dest=configs/ospf-auto.cfg
+
+    - name: deploying ospf configuratoin in ios
+      ios_config:
+       lines:
+         - "{{ item }}"
+       parents: "router ospf {{ospf.process}}"
+      with_lines: cat configs/ospf-auto.cfg
+
+	  
+====
+
+
+	  
+groups/all.yaml content for this
+ospf:
+ process: 1000
+ network:
+  -  no network 192.168.11.0 0.0.0.255 area 0
+  -  network 192.168.12.0 0.0.0.255 area 0
+  -  network 192.168.13.0 0.0.0.255 area 0
+  -  network 192.168.14.0 0.0.0.255 area 0
+  -  network 192.168.20.0 0.0.0.255 area 0
+  -  network 192.168.21.0 0.0.0.255 area 0
+  -  network 192.168.22.0 0.0.0.255 area 0
+  
+  
+====
+create tempalte as per below
+{% for networknumber in ospf.network %}
+{{ networknumber}}
+{% endfor %}

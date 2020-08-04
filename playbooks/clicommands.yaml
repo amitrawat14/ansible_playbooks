@@ -1,0 +1,41 @@
+---
+- name: CHANGE CONFIGURATION
+  hosts: ios_devices
+  gather_facts: false
+
+  tasks:
+   - name: Configure device with config
+     cli_config:
+      config: |
+       int GigabitEthernet2
+       no sh
+       description configured with ansible to change ip address
+       ip address 2.2.2.2 255.255.255.252
+       int loopback2
+       description configure loopback2
+       ip address 2.1.1.1 255.255.255.255
+     notify:
+      - SAVE CONFIGURATION
+
+   - name: RUN SHOW COMMAND
+     cli_command:
+       command: "{{show_interfaces}}"
+     register: command_output
+
+   - name: PRINT TO TERMINAL WINDOW
+     debug:
+      msg: "{{command_output.stdout_lines}}"
+
+   - name: RUN SHOW DESCriptino
+     cli_command:
+      command: "{{show_desc}}"
+     register: command_output
+
+   - name: print
+     debug:
+      msg: "{{command_output.stdout_lines}}"
+
+  handlers:
+    - name: SAVE CONFIGURATION
+      cli_command:
+       command: "{{save}}"
